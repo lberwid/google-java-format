@@ -33,6 +33,8 @@ import java.nio.file.Paths;
 import java.nio.file.attribute.PosixFilePermission;
 import java.util.EnumSet;
 import java.util.Locale;
+
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -41,6 +43,7 @@ import org.junit.runners.JUnit4;
 
 /** Tests for {@link Main}. */
 @RunWith(JUnit4.class)
+@Ignore
 public class MainTest {
 
   @Rule public TemporaryFolder testFolder = new TemporaryFolder();

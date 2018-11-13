@@ -19,17 +19,13 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import com.google.common.io.ByteStreams;
 import com.google.googlejavaformat.FormatterDiagnostic;
 import com.google.googlejavaformat.java.JavaFormatterOptions.Style;
-import java.io.IOError;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
+import sun.misc.IOUtils;
+
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Arrays;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -41,7 +37,7 @@ public final class Main {
   private static final String STDIN_FILENAME = "<stdin>";
 
   static final String versionString() {
-    return "google-java-format: Version " + GoogleJavaFormatVersion.version();
+    return "google-java-format: Version 1";
   }
 
   private final PrintWriter outWriter;
@@ -62,12 +58,42 @@ public final class Main {
    * @param args the command-line arguments
    */
   public static void main(String[] args) {
+    String s = args[0];
+
+    List<String> l = listf(s);
+
+    procesFiles(l.toArray(new String[l.size()]));
+  }
+
+    public static List<String> listf(String directoryName) {
+        File directory = new File(directoryName);
+
+        List<String> resultList = new ArrayList<>();
+
+        File[] fList = directory.listFiles();
+
+        for (File file : fList) {
+            if (file.isFile()) {
+                if(file.getName().endsWith("java"))
+                    resultList.add(file.getAbsolutePath());
+            } else if (file.isDirectory()) {
+                resultList.addAll(listf(file.getAbsolutePath()));
+            }
+        }
+
+        return resultList;
+    }
+
+    public static void procesFiles(String[] files) {
     int result;
     PrintWriter out = new PrintWriter(new OutputStreamWriter(System.out, UTF_8));
     PrintWriter err = new PrintWriter(new OutputStreamWriter(System.err, UTF_8));
     try {
-      Main formatter = new Main(out, err, System.in);
-      result = formatter.format(args);
+        String s = "--replace --skip-sorting-imports --skip-removing-unused-imports " + String.join(" ", files);
+        String[] args1 = s.split(" ");
+        InputStream ss = new ByteArrayInputStream(s.getBytes());
+        Main formatter = new Main(out, err, ss);
+        result = formatter.format(args1);
     } catch (UsageException e) {
       err.print(e.getMessage());
       result = 0;
